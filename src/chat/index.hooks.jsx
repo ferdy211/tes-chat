@@ -8,6 +8,7 @@ const baseUrl = "http://47.129.249.209:3001";
 // const baseUrl = "http://localhost:3001";
 
 const useChat = () => {
+  console.log("re render");
   const { id } = useParams();
   const socket = useMemo(() => {
     return io
@@ -25,11 +26,6 @@ const useChat = () => {
       });
   }, [id]);
   const [state, dispatch] = useReducer(reducer, initialState);
-  console.log("OKOKOKOKOK");
-  console.log(socket, "socket");
-  // const [listChat, setListChat] = useState([]);
-
-  const [selectedChat, setSelectedChat] = useState(null);
   const getListChat = async (id) => {
     try {
       const response = await axios.get(`${baseUrl}/api/chats/${id}`);

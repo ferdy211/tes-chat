@@ -9,9 +9,7 @@ import {
   MessageList,
   Message,
   MessageInput,
-  TypingIndicator,
   ChatContainer,
-  MessageSeparator,
 } from "@chatscope/chat-ui-kit-react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 
@@ -71,6 +69,7 @@ const Chat = () => {
                 <>
                   {e.senderId == id ? (
                     <Message
+                      style={{ paddingTop: index == 0 ? 12 : 0 }}
                       key={index}
                       avatarSpacer
                       model={{
@@ -83,6 +82,7 @@ const Chat = () => {
                     />
                   ) : (
                     <Message
+                      style={{ paddingTop: index == 0 ? 12 : 0 }}
                       key={index}
                       model={{
                         direction: "incoming",

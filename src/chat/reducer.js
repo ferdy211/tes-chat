@@ -37,7 +37,10 @@ export const reducer = (state = initialState, action) => {
       if (isSameRoom) {
         return {
           ...state,
-          message: [...state.message, action.payload],
+          message: [
+            ...state.message.filter((item) => item.id != action.payload.id),
+            action.payload,
+          ],
         };
       }
       return { ...state };
