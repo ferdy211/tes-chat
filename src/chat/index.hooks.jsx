@@ -1,41 +1,51 @@
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useReducer } from "react";
 import axios from "axios";
+import { reducer, initialState } from "./reducer";
 
 const baseUrl = "http://47.129.249.209:3001";
 // const baseUrl = "http://localhost:3001";
 
 const useChat = () => {
   const { id } = useParams();
-  const socket = io
-    .connect(baseUrl, {
-      transports: ["websocket"],
-      reconnection: true,
-      reconnectionAttempts: Infinity,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      timeout: 20000,
-    })
-    .on("connect", () => {
-      socket.emit("joinChat", id);
-      console.log("connected", id);
-    });
-  const [listChat, setListChat] = useState([]);
+  const socket = useMemo(() => {
+    return io
+      .connect(baseUrl, {
+        transports: ["websocket"],
+        reconnection: true,
+        reconnectionAttempts: Infinity,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        timeout: 20000,
+      })
+      .on("connect", () => {
+        socket.emit("joinChat", id);
+        console.log("connected", id);
+      });
+  }, [id]);
+  const [state, dispatch] = useReducer(reducer, initialState);
+  console.log("OKOKOKOKOK");
+  console.log(socket, "socket");
+  // const [listChat, setListChat] = useState([]);
+
+  const [selectedChat, setSelectedChat] = useState(null);
   const getListChat = async (id) => {
     try {
       const response = await axios.get(`${baseUrl}/api/chats/${id}`);
       if (response.data && response.data.length > 0) {
-        setListChat(response.data);
+        dispatch({ type: "SET_LIST_CHAT", payload: response.data });
       } else {
-        setListChat([]);
+        dispatch({ type: "SET_LIST_CHAT", payload: [] });
       }
     } catch (error) {
       console.log(error);
-      setListChat([]);
+      dispatch({ type: "SET_LIST_CHAT", payload: [] });
     }
   };
-  const [message, setMessage] = useState([]);
+  useEffect(() => {
+    getListChat(id);
+  }, [id]);
   const getMessage = async (chatId) => {
     try {
       const response = await axios.get(
@@ -45,45 +55,34 @@ const useChat = () => {
         }
       );
       if (response?.data?.messages && response.data.messages.length > 0) {
-        setMessage(response.data.messages);
+        dispatch({ type: "SET_MESSAGE", payload: response.data.messages });
       } else {
-        console.log("empty");
-        setMessage([]);
+        dispatch({ type: "SET_MESSAGE", payload: [] });
       }
     } catch (error) {
       console.log(error);
-      setMessage([]);
+      dispatch({ type: "SET_MESSAGE", payload: [] });
     }
   };
   useEffect(() => {
-    getListChat(id);
-  }, [id]);
-  useEffect(() => {
     socket.on("roomChat", (chat) => {
-      const findChat = chat.find((item) => item.userId == id);
-      const newListChat = listChat.filter(
-        (item) => item.chatId != findChat?.groupChat?.chatId
-      );
-      setListChat([findChat.groupChat, ...newListChat]);
+      dispatch({
+        type: "NEW_CHAT",
+        payload: { data: chat, id },
+      });
     });
     socket.on("readRoomChat", (newMessage) => {
-      const newListChat = listChat.map((item) => {
-        if (item.chatId === newMessage.chatId) {
-          return newMessage;
-        }
-        return item;
-      });
-      setListChat(newListChat);
+      dispatch({ type: "READ_MESSAGE", payload: newMessage });
     });
     socket.on("message", (newMessage) => {
-      if (selectedChat && newMessage.chatId === selectedChat.chatId) {
-        setMessage([newMessage, ...message]);
-      }
+      dispatch({
+        type: "NEW_CHAT_MESSAGE",
+        payload: newMessage,
+      });
     });
   }, [socket]);
-  const [selectedChat, setSelectedChat] = useState(null);
   const handleSelectChat = (e) => {
-    setSelectedChat(e);
+    dispatch({ type: "SET_SELECTED_CHAT", payload: e });
     getMessage(e?.chatId);
     socket.emit("readMessage", {
       userId: id,
@@ -92,20 +91,20 @@ const useChat = () => {
   };
   const handleSend = (e) => {
     socket.emit("newMessage", {
-      chatId: selectedChat.chatId,
+      chatId: state.selectedChat.chatId,
       senderId: id,
       text: e,
-      participantIds: selectedChat.participants,
+      participantIds: state.selectedChat.participants,
       senderName: id == 0 ? "Admin" : "User",
     });
   };
   return {
     socket,
-    listChat,
+    listChat: state.listChat,
     handleSelectChat,
-    selectedChat,
+    selectedChat: state.selectedChat,
     handleSend,
-    message,
+    message: state.message,
     id,
   };
 };

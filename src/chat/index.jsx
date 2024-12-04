@@ -28,23 +28,25 @@ const Chat = () => {
     >
       <Sidebar position="left">
         <ConversationList>
-          {listChat.map((item) => (
-            <Conversation
-              unreadCnt={item.unreadCount}
-              onClick={() =>
-                item.chatId !== selectedChat?.chatId && handleSelectChat(item)
-              }
-              active={selectedChat?.chatId === item.chatId}
-              info={item.lastMessage?.text}
-              //   lastSenderName={item.chatName}
-              name={item.chatName}
-            >
-              <Avatar
-                src={`https://ui-avatars.com/api/?name=${item.chatName}&size=64&length=1`}
-                // status="available"
-              />
-            </Conversation>
-          ))}
+          {listChat &&
+            listChat.map((item, key) => (
+              <Conversation
+                key={key}
+                unreadCnt={item.unreadCount}
+                onClick={() =>
+                  item.chatId !== selectedChat?.chatId && handleSelectChat(item)
+                }
+                active={selectedChat?.chatId === item.chatId}
+                info={item.lastMessage?.text}
+                //   lastSenderName={item.chatName}
+                name={item.chatName}
+              >
+                <Avatar
+                  src={`https://ui-avatars.com/api/?name=${item.chatName}&size=64&length=1`}
+                  // status="available"
+                />
+              </Conversation>
+            ))}
         </ConversationList>
       </Sidebar>
       {selectedChat && (
@@ -61,13 +63,15 @@ const Chat = () => {
             />
           </ConversationHeader>
           <MessageList
-          // typingIndicator={<TypingIndicator content="Zoe is typing" />}
+            key={selectedChat.chatId}
+            // typingIndicator={<TypingIndicator content="Zoe is typing" />}
           >
-            {message.map((e) => {
+            {message.map((e, index) => {
               return (
                 <>
                   {e.senderId == id ? (
                     <Message
+                      key={index}
                       avatarSpacer
                       model={{
                         direction: "outgoing",
@@ -79,6 +83,7 @@ const Chat = () => {
                     />
                   ) : (
                     <Message
+                      key={index}
                       model={{
                         direction: "incoming",
                         message: e.text,
