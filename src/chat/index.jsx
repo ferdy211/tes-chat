@@ -10,12 +10,20 @@ import {
   Message,
   MessageInput,
   ChatContainer,
+  TypingIndicator,
 } from "@chatscope/chat-ui-kit-react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 
 const Chat = () => {
-  const { listChat, handleSelectChat, selectedChat, handleSend, message, id } =
-    useChat();
+  const {
+    listChat,
+    handleSelectChat,
+    selectedChat,
+    handleSend,
+    message,
+    id,
+    deleteMessage,
+  } = useChat();
   return (
     <MainContainer
       responsive
@@ -36,11 +44,15 @@ const Chat = () => {
                 }
                 active={selectedChat?.chatId === item.chatId}
                 info={item.lastMessage?.text}
-                //   lastSenderName={item.chatName}
+                lastSenderName={
+                  id == item.lastMessage?.senderId
+                    ? "You"
+                    : item.lastMessage?.senderName
+                }
                 name={item.chatName}
               >
                 <Avatar
-                  src={`https://ui-avatars.com/api/?name=${item.chatName}&size=64&length=1`}
+                  src={`https://ui-avatars.com/api/?name=${item.chatName}&size=64&length=2`}
                   // status="available"
                 />
               </Conversation>
@@ -52,32 +64,55 @@ const Chat = () => {
           <ConversationHeader>
             <ConversationHeader.Back />
             <Avatar
-              src={`https://ui-avatars.com/api/?name=${selectedChat.chatName}&size=64&length=1`}
+              src={`https://ui-avatars.com/api/?name=${selectedChat.chatName}&size=64&length=2`}
               // status="available"
             />
             <ConversationHeader.Content
               //   info="Active 10 mins ago"
-              userName={selectedChat.chatName}
+              userName={
+                selectedChat.chatName +
+                ` (${selectedChat.participants.map((e) => {
+                  if (e.userId == id) {
+                    return "You";
+                  } else {
+                    return e.userName;
+                  }
+                })})`
+              }
             />
           </ConversationHeader>
           <MessageList
             key={selectedChat.chatId}
-            // typingIndicator={<TypingIndicator content="Zoe is typing" />}
+            // typingIndicator={
+            //   <>
+            //     <TypingIndicator
+            //       content={
+            //         <>
+            //           <p>Zoel is typing</p>
+            //         </>
+            //       }
+            //     />
+            //   </>
+            // }
           >
             {message.map((e, index) => {
               return (
                 <>
                   {e.senderId == id ? (
                     <Message
-                      style={{ paddingTop: index == 0 ? 12 : 0 }}
+                      onDoubleClick={() => {
+                        deleteMessage(e.id);
+                      }}
+                      style={{
+                        paddingTop: index == 0 ? 12 : 0,
+                        cursor: "pointer",
+                      }}
                       key={index}
                       avatarSpacer
                       model={{
                         direction: "outgoing",
                         message: e.text,
                         position: "single",
-                        sender: e.senderName,
-                        sentTime: "15 mins ago",
                       }}
                     />
                   ) : (
@@ -88,12 +123,14 @@ const Chat = () => {
                         direction: "incoming",
                         message: e.text,
                         position: "single",
-                        sender: e.senderName,
-                        sentTime: "15 mins ago",
                       }}
                     >
                       <Avatar
-                        src={`https://ui-avatars.com/api/?name=${selectedChat.senderName}&size=64&length=1`}
+                        src={`https://ui-avatars.com/api/?name=${
+                          selectedChat.participants.find(
+                            (i) => i.userId == e.senderId
+                          )?.userName
+                        }&size=64&length=2`}
                       />
                     </Message>
                   )}

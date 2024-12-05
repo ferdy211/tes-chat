@@ -51,7 +51,10 @@ const useChat = () => {
         }
       );
       if (response?.data?.messages && response.data.messages.length > 0) {
-        dispatch({ type: "SET_MESSAGE", payload: response.data.messages });
+        dispatch({
+          type: "SET_MESSAGE",
+          payload: response.data.messages.reverse(),
+        });
       } else {
         dispatch({ type: "SET_MESSAGE", payload: [] });
       }
@@ -76,6 +79,9 @@ const useChat = () => {
         payload: newMessage,
       });
     });
+    socket.on("deletedMessage", (id) => {
+      dispatch({ type: "DELETE_CHAT", payload: id });
+    });
   }, [socket]);
   const handleSelectChat = (e) => {
     dispatch({ type: "SET_SELECTED_CHAT", payload: e });
@@ -90,8 +96,13 @@ const useChat = () => {
       chatId: state.selectedChat.chatId,
       senderId: id,
       text: e,
-      participantIds: state.selectedChat.participants,
-      senderName: id == 0 ? "Admin" : "User",
+      participants: state.selectedChat.participants,
+    });
+  };
+  const deleteMessage = (id) => {
+    socket.emit("deleteMessage", {
+      participantIds: state.selectedChat.participants.map((e) => e.userId),
+      messageId: id,
     });
   };
   return {
@@ -102,6 +113,7 @@ const useChat = () => {
     handleSend,
     message: state.message,
     id,
+    deleteMessage,
   };
 };
 

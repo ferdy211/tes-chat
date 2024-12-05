@@ -11,7 +11,7 @@ export const reducer = (state = initialState, action) => {
     case "SET_LIST_CHAT":
       return { ...state, listChat: action.payload };
     case "SET_MESSAGE":
-      return { ...state, message: action.payload.reverse() };
+      return { ...state, message: action.payload };
     case "READ_MESSAGE":
       return {
         ...state,
@@ -44,6 +44,9 @@ export const reducer = (state = initialState, action) => {
         };
       }
       return { ...state };
+    case "DELETE_CHAT":
+      const newMessage = state.message.filter((e) => e.id != action.payload);
+      return { ...state, message: newMessage };
     default:
       return state;
   }
