@@ -5,6 +5,7 @@ import axios from "axios";
 import { reducer, initialState } from "./reducer";
 
 const baseUrl = "http://47.129.249.209:3001";
+const socketUrl = "http://47.129.249.209:3001";
 // const baseUrl = "http://localhost:3001";
 
 const useChat = () => {
@@ -12,7 +13,7 @@ const useChat = () => {
   const { id } = useParams();
   const socket = useMemo(() => {
     return io
-      .connect(baseUrl, {
+      .connect(socketUrl, {
         transports: ["websocket"],
         reconnection: true,
         reconnectionAttempts: Infinity,
