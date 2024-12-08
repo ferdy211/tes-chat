@@ -22,7 +22,7 @@ const useChat = () => {
         timeout: 20000,
       })
       .on("connect", () => {
-        socket.emit("joinChat", id);
+        socket.emit("joinSocket", id);
         console.log("connected", id);
       });
   }, [id]);
@@ -82,6 +82,12 @@ const useChat = () => {
     });
     socket.on("deletedMessage", (id) => {
       dispatch({ type: "DELETE_CHAT", payload: id });
+    });
+    socket.on("order", (data) => {
+      console.log(data, "DATA ORDER");
+    });
+    socket.on("newLocationDispatcher", (data) => {
+      console.log("newLocationDispatcher", data);
     });
   }, [socket]);
   const handleSelectChat = (e) => {
