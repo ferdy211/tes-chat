@@ -4,8 +4,8 @@ import { useState, useEffect, useMemo, useReducer } from "react";
 import axios from "axios";
 import { reducer, initialState } from "./reducer";
 
-const baseUrl = "http://47.129.249.209:3001";
-const socketUrl = "http://47.129.249.209:3001";
+const baseUrl = "https://apigwdev.goinsure.com.bn";
+const socketUrl = "wss://apigwdev.goinsure.com.bn";
 // const baseUrl = "http://localhost:3001";
 
 const useChat = () => {
@@ -26,6 +26,7 @@ const useChat = () => {
         console.log("connected", id);
       });
   }, [id]);
+  // console.log(socket, "SOCKET");
   const [state, dispatch] = useReducer(reducer, initialState);
   const getListChat = async (id) => {
     try {
